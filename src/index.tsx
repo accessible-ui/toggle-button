@@ -52,9 +52,9 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
   onChange,
   children,
 }) => {
-  const didMount = useRef<boolean>(false)
   const [activeState, toggle] = useSwitch(defaultActive)
   const active = controlledActive === void 0 ? activeState : controlledActive
+  const prevActive = useRef<boolean>(active)
   const context = useMemo(
     () => ({
       toggle,
@@ -66,8 +66,8 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
   )
 
   useEffect(() => {
-    didMount.current && onChange?.(active)
-    didMount.current = true
+    prevActive.current !== active && onChange?.(active)
+    prevActive.current = active
   }, [active])
 
   // Fucking TypeScript is actually really dumb sometimes. See below for a
