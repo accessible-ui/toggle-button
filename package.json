@@ -84,7 +84,11 @@
     "ts-jest": "latest",
     "typescript": "latest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@accessible/button": "^1.0.1",
+    "@react-hook/switch": "^1.0.4",
+    "clsx": "^1.0.4"
+  },
   "peerDependencies": {
     "prop-types": ">=15.6",
     "react": ">=16.8",
