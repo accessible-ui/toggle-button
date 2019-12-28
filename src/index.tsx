@@ -72,8 +72,13 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
       <Button>
         {cloneElement(children, {
           className:
-            clsx(props.className, active ? activeClass : inactiveClass) || void 0,
-          style: Object.assign({}, props.style, active ? activeStyle : inactiveStyle),
+            clsx(props.className, active ? activeClass : inactiveClass) ||
+            void 0,
+          style: Object.assign(
+            {},
+            props.style,
+            active ? activeStyle : inactiveStyle
+          ),
           'aria-pressed': '' + active,
           onClick: e => {
             toggle()

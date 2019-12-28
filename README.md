@@ -41,7 +41,7 @@ import {ToggleButton} from '@accessible/toggle-button'
 
 const Component = () => (
   <ToggleButton onChange={value => (value ? video.mute() : video.unmute())}>
-    <span>Mute or Unmute</span>
+    {({active}) => <span>{active ? 'Unmute' : 'Mute'}</span>}
   </ToggleButton>
 )
 ```
