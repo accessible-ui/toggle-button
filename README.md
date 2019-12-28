@@ -36,11 +36,13 @@ provides interop between real `<button>` elements and faux `<div>`, `<a>`, `<spa
 
 ## Quick Start
 
+[Check out the example on CodeSandbox](https://codesandbox.io/s/accessibletoggle-button-example-s1cuy)
+
 ```jsx harmony
 import {ToggleButton} from '@accessible/toggle-button'
 
 const Component = () => (
-  <ToggleButton onChange={value => (value ? video.mute() : video.unmute())}>
+  <ToggleButton onChange={value => (value ? mute() : unmute())}>
     {({active}) => <span>{active ? 'Unmute' : 'Mute'}</span>}
   </ToggleButton>
 )
