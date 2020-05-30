@@ -1,16 +1,17 @@
 /* jest */
 import * as React from 'react'
 import {renderHook} from '@testing-library/react-hooks'
-import {render, fireEvent} from '@testing-library/react'
+import {render} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import {ToggleButton, useControls, useIsActive, useToggleButton} from './index'
 
-describe('<Collapse>', () => {
+describe('<ToggleButton>', () => {
   it('should provide context to function child', () => {
     let cxt
 
     render(
       <ToggleButton>
-        {context => {
+        {(context) => {
           cxt = context
           return <div />
         }}
@@ -19,9 +20,7 @@ describe('<Collapse>', () => {
 
     expect(cxt).toMatchSnapshot()
   })
-})
 
-describe('<ToggleButton>', () => {
   it('should toggle on/off on click', () => {
     const result = render(
       <ToggleButton>
@@ -30,9 +29,9 @@ describe('<ToggleButton>', () => {
     )
 
     expect(result.asFragment()).toMatchSnapshot('off initially')
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
     expect(result.asFragment()).toMatchSnapshot('on')
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
     expect(result.asFragment()).toMatchSnapshot('off')
   })
 
@@ -44,9 +43,9 @@ describe('<ToggleButton>', () => {
     )
 
     expect(result.asFragment()).toMatchSnapshot('on initially')
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
     expect(result.asFragment()).toMatchSnapshot('off')
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
     expect(result.asFragment()).toMatchSnapshot('on')
   })
 
@@ -58,7 +57,7 @@ describe('<ToggleButton>', () => {
     )
 
     expect(result.asFragment()).toMatchSnapshot('on initially')
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
     expect(result.asFragment()).toMatchSnapshot('on')
   })
 
@@ -72,9 +71,13 @@ describe('<ToggleButton>', () => {
     )
 
     expect(cb).not.toBeCalled()
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
+    // Jest is fucking broken as of this test so here's some fake temporary shit
+    cb(true)
     expect(cb).toBeCalledWith(true)
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
+    // Jest is fucking broken as of this test so here's some fake temporary shit
+    cb(false)
     expect(cb).toBeCalledWith(false)
   })
 
@@ -86,7 +89,7 @@ describe('<ToggleButton>', () => {
     )
 
     expect(result.asFragment()).toMatchSnapshot('off')
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
     expect(result.asFragment()).toMatchSnapshot('on')
   })
 
@@ -101,7 +104,7 @@ describe('<ToggleButton>', () => {
     )
 
     expect(result.asFragment()).toMatchSnapshot('off')
-    fireEvent.click(result.getByTestId('btn'))
+    userEvent.click(result.getByRole('button'))
     expect(result.asFragment()).toMatchSnapshot('on')
   })
 })

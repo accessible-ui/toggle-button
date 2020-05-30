@@ -1,14 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Collapse> should provide context to function child 1`] = `
-Object {
-  "active": false,
-  "off": [Function],
-  "on": [Function],
-  "toggle": [Function],
-}
-`;
-
 exports[`<ToggleButton> should be on by default when defaultActive: off 1`] = `
 <DocumentFragment>
   <button
@@ -128,6 +119,15 @@ exports[`<ToggleButton> should not toggle on click when in a controlled state: o
     true
   </button>
 </DocumentFragment>
+`;
+
+exports[`<ToggleButton> should provide context to function child 1`] = `
+Object {
+  "active": false,
+  "off": [Function],
+  "on": [Function],
+  "toggle": [Function],
+}
 `;
 
 exports[`<ToggleButton> should toggle on/off on click: off 1`] = `

@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  cloneElement,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react'
+import * as React from 'react'
 import useSwitch from '@react-hook/switch'
 import Button from '@accessible/button'
 import clsx from 'clsx'
@@ -17,16 +10,21 @@ export interface ToggleButtonContextValue {
   active: boolean
 }
 
-// @ts-ignore
-export const ToggleButtonContext: React.Context<ToggleButtonContextValue> = createContext(
-  {}
-)
-export const useToggleButton = () => useContext(ToggleButtonContext)
+export const ToggleButtonContext = React.createContext<
+  ToggleButtonContextValue
+>({
+  toggle: () => {},
+  on: () => {},
+  off: () => {},
+  active: false,
+})
+
+export const useToggleButton = () => React.useContext(ToggleButtonContext)
 export const useControls = () => {
-  const {on, off, toggle} = useContext(ToggleButtonContext)
+  const {on, off, toggle} = React.useContext(ToggleButtonContext)
   return {on, off, toggle}
 }
-export const useIsActive = () => useContext(ToggleButtonContext).active
+export const useIsActive = () => React.useContext(ToggleButtonContext).active
 
 export interface ToggleButtonProps {
   active?: boolean
@@ -54,25 +52,26 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
 }) => {
   const [activeState, toggle] = useSwitch(defaultActive)
   const active = controlledActive === void 0 ? activeState : controlledActive
-  const prevActive = useRef<boolean>(active)
-  const context = useMemo(
+  const prevActive = React.useRef<boolean>(active)
+  const storedOnChange = React.useRef(onChange)
+  storedOnChange.current = onChange
+  const context = React.useMemo(
     () => ({
       toggle,
       on: toggle.on,
       off: toggle.off,
       active,
     }),
-    [active]
+    [active, toggle]
   )
 
-  useEffect(() => {
-    prevActive.current !== active && onChange?.(active)
-    prevActive.current = active
-  }, [active])
+  React.useEffect(() => {
+    prevActive.current !== activeState && storedOnChange.current?.(activeState)
+    prevActive.current = activeState
+  }, [activeState])
 
   // Fucking TypeScript is actually really dumb sometimes. See below for a
   // prime example
-  // @ts-ignore
   const realChildren = (typeof children === 'function'
     ? children(context)
     : children) as React.ReactElement
@@ -81,7 +80,7 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
   return (
     <ToggleButtonContext.Provider value={context}>
       <Button>
-        {cloneElement(realChildren, {
+        {React.cloneElement(realChildren, {
           className:
             clsx(props.className, active ? activeClass : inactiveClass) ||
             void 0,
@@ -91,9 +90,9 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
             active ? activeStyle : inactiveStyle
           ),
           'aria-pressed': '' + active,
-          onClick: e => {
+          onClick: (event: React.MouseEvent<HTMLElement>) => {
             toggle()
-            props.onClick?.(e)
+            props.onClick?.(event)
           },
         })}
       </Button>
