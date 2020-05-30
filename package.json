@@ -1,9 +1,9 @@
 {
   "name": "@accessible/toggle-button",
-  "version": "1.1.0",
-  "homepage": "https://github.com/accessible-ui/accessible#readme",
-  "repository": "github:accessible-ui/accessible",
-  "bugs": "https://github.com/accessible-ui/accessible/issues",
+  "version": "1.1.1",
+  "homepage": "https://github.com/accessible-ui/toggle-button#readme",
+  "repository": "github:accessible-ui/toggle-button",
+  "bugs": "https://github.com/accessible-ui/toggle-button/issues",
   "author": "Jared Lunde <jared.lunde@gmail.com> (https://jaredLunde.com)",
   "license": "MIT",
   "description": "An accessible two-state button that can be either off (not pressed) or on (pressed)",
