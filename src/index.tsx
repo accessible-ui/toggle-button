@@ -1,7 +1,6 @@
 import * as React from 'react'
 import useSwitch from '@react-hook/switch'
 import useMergedRef from '@react-hook/merged-ref'
-import useChange from '@react-hook/change'
 import {useA11yButton} from '@accessible/button'
 import clsx from 'clsx'
 
@@ -24,12 +23,11 @@ export function useA11yToggleButton<
     onChange = noop,
   }: UseA11yToggleButtonOptions<E> = {}
 ) {
-  const [active, toggle] = useSwitch(defaultActive)
-  useChange(active, onChange)
+  const [active, toggle] = useSwitch(defaultActive, controlledActive, onChange)
 
   return Object.assign(
     {
-      'aria-pressed': controlledActive ?? active,
+      'aria-pressed': active,
     } as const,
     useA11yButton<T, E>(target, (event) => {
       toggle()
