@@ -36,62 +36,108 @@ provides interop between real `<button>` elements and faux `<div>`, `<a>`, `<spa
 
 ## Quick Start
 
-[Check out the example on CodeSandbox](https://codesandbox.io/s/accessibletoggle-button-example-s1cuy)
+[Check out the example on **CodeSandbox**](https://codesandbox.io/s/accessibletoggle-button-example-s1cuy)
 
 ```jsx harmony
-import {ToggleButton} from '@accessible/toggle-button'
+import * as React from 'react'
+import {ToggleButton, useA11yToggleButton} from '@accessible/toggle-button'
 
-const Component = () => (
-  <ToggleButton onChange={(value) => (value ? mute() : unmute())}>
-    {({active}) => <span>{active ? 'Unmute' : 'Mute'}</span>}
-  </ToggleButton>
-)
+const Component = () => {
+  const [muted, setMuted] = React.useState(false)
+  return (
+    <ToggleButton active={muted} onChange={setMuted}>
+      <span>{muted ? 'Unmute' : 'Mute'}</span>
+    </ToggleButton>
+  )
+}
+
+const ComponentWithHook = () => {
+  const ref = React.useRef(null)
+  const [muted, setMuted] = React.useState(false)
+  const a11yProps = useA11yToggleButton(ref, {
+    active: muted,
+    onChange: setMuted,
+  })
+
+  return (
+    <button ref={ref} {...a11yProps}>
+      <span>{muted ? 'Unmute' : 'Mute'}</span>
+    </button>
+  )
+}
 ```
 
 ## API
 
-### `<ToggleButton>`
+### useA11yToggleButton(target, options?)
+
+A React hook for creating a headless a11y toggle button to the
+[W3C accessibility standard](https://www.w3.org/TR/wai-aria-practices/#button). In addition
+to providing accessibility props to your component, this hook will add events for interoperability
+between actual `<button>` elements and fake ones e.g. `<a>` and `<div>` to the `target` element.
+
+#### Arguments
+
+| Argument | Type                                                        | Required? | Description                                                                                          |
+| -------- | ----------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------- |
+| target   | <code>React.RefObject&lt;T&gt; &#124; T &#124; null</code>  | Yes       | A React ref or HTML element                                                                          |  |
+| options  | [`UseA11yToggleButtonOptions`](#usea11ytogglebuttonoptions) | Yes       | The component you want to turn into a button that handles focus and `space`, `enter` keydown events. |
+
+#### UseA11yToggleButtonOptions
+
+```ts
+export interface UseA11yToggleButtonOptions<
+  E extends React.MouseEvent<any, MouseEvent>
+> {
+  /**
+   * Creates a controlled hook where the active value always matches this one.
+   */
+  active?: boolean
+  /**
+   * Sets the default active state of the button for uncontrolled hooks.
+   * @default false
+   */
+  defaultActive?: boolean
+  /**
+   * This callback is invoked any time the active state of the
+   * toggle button changes
+   */
+  onChange?: (active: boolean) => void
+  /**
+   * Adds a click event to your button
+   */
+  onClick?: (event: E) => any
+}
+```
+
+#### Returns
+
+```ts
+{
+    readonly 'aria-pressed': boolean;
+    readonly onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    readonly role: "button";
+    readonly tabIndex: 0;
+}
+```
+
+### &lt;ToggleButton&gt;
 
 This component clones its child component and adds accessibility roles for pressed/unpressed
 state buttons. It also creates context so its active state is accessible from its children.
 
 #### Props
 
-| Prop          | Type                                                                                              | Default     | Required? | Description                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------- | ----------- | --------- | -------------------------------------------------------------------------------------- |
-| active        | `string`                                                                                          | `undefined` | No        | Creates a controlled component where the active value always matches this one.         |
-| defaultActive | `string`                                                                                          | `false`     | No        | Sets the default active state of the button.                                           |
-| activeClass   | `string`                                                                                          | `undefined` | No        | Adds this class name to its child component when the button is in a active state.      |
-| inactiveClass | `string`                                                                                          | `undefined` | No        | Adds this class name to its child component when the button is in an inactive state.   |
-| activeStyle   | `React.CSSProperties`                                                                             | `undefined` | No        | Adds this style object to its child component when the button is in a active state.    |
-| inactiveStyle | `React.CSSProperties`                                                                             | `undefined` | No        | Adds this style object to its child component when the button is in an inactive state. |
-| onChange      | `(active: boolean) => void`                                                                       | `undefined` | No        | This callback is called any time the active state changes.                             |
-| children      | <code>React.ReactElement &#0124; (context: ToggleButtonContextValue) => React.ReactElement</code> | `undefined` | Yes       | This is the element you want to turn into a ToggleButton.                              |
-
-### `useToggleButton()`
-
-This hook provides access to the button's [context](#togglebuttoncontextvalue)
-
-### `ToggleButtonContextValue`
-
-```typescript jsx
-interface ToggleButtonContextValue {
-  toggle: () => void
-  on: () => void
-  off: () => void
-  active: boolean
-}
-```
-
-### `useControls()`
-
-This hook returns the button's `toggle`, `on`, `off` functions that control its `active` state.
-
-### `useIsActive()`
-
-This hook returns the button's `active` state
-
-###
+| Prop          | Type                        | Default | Required? | Description                                                                            |
+| ------------- | --------------------------- | ------- | --------- | -------------------------------------------------------------------------------------- |
+| active        | `string`                    |         | No        | Creates a controlled component where the active value always matches this one.         |
+| defaultActive | `string`                    | `false` | No        | Sets the default active state of the button.                                           |
+| activeClass   | `string`                    |         | No        | Adds this class name to its child component when the button is in a active state.      |
+| inactiveClass | `string`                    |         | No        | Adds this class name to its child component when the button is in an inactive state.   |
+| activeStyle   | `React.CSSProperties`       |         | No        | Adds this style object to its child component when the button is in a active state.    |
+| inactiveStyle | `React.CSSProperties`       |         | No        | Adds this style object to its child component when the button is in an inactive state. |
+| onChange      | `(active: boolean) => void` |         | No        | This callback is invoked any time the active state changes.                            |
+| children      | `React.ReactElement`        |         | Yes       | This is the element you want to turn into a ToggleButton.                              |
 
 ## LICENSE
 

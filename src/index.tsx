@@ -1,106 +1,148 @@
 import * as React from 'react'
 import useSwitch from '@react-hook/switch'
-import Button from '@accessible/button'
+import useMergedRef from '@react-hook/merged-ref'
+import useChange from '@react-hook/change'
+import {useA11yButton} from '@accessible/button'
 import clsx from 'clsx'
 
-export interface ToggleButtonContextValue {
-  toggle: () => void
-  on: () => void
-  off: () => void
-  active: boolean
+/**
+ * A React hook for creating a headless a11y toggle button to the
+ * W3C accessibility standard.
+ *
+ * @param target A React ref or HTML element
+ * @param options Configuration options
+ */
+export function useA11yToggleButton<
+  T extends HTMLElement,
+  E extends React.MouseEvent<T, MouseEvent>
+>(
+  target: React.RefObject<T> | T | null,
+  {
+    active: controlledActive,
+    defaultActive = false,
+    onClick = noop,
+    onChange = noop,
+  }: UseA11yToggleButtonOptions<E> = {}
+) {
+  const [active, toggle] = useSwitch(defaultActive)
+  useChange(active, onChange)
+
+  return Object.assign(
+    {
+      'aria-pressed': controlledActive ?? active,
+    } as const,
+    useA11yButton<T, E>(target, (event) => {
+      toggle()
+      onClick(event)
+    })
+  )
 }
 
-export const ToggleButtonContext = React.createContext<
-  ToggleButtonContextValue
->({
-  toggle: () => {},
-  on: () => {},
-  off: () => {},
-  active: false,
-})
-
-export const useToggleButton = () => React.useContext(ToggleButtonContext)
-export const useControls = () => {
-  const {on, off, toggle} = React.useContext(ToggleButtonContext)
-  return {on, off, toggle}
-}
-export const useIsActive = () => React.useContext(ToggleButtonContext).active
-
-export interface ToggleButtonProps {
-  active?: boolean
-  defaultActive?: boolean
-  activeClass?: string
-  inactiveClass?: string
-  activeStyle?: React.CSSProperties
-  inactiveStyle?: React.CSSProperties
-  onChange?: (on: boolean) => void
-  children:
-    | React.ReactElement
-    | JSX.Element
-    | ((context: ToggleButtonContextValue) => React.ReactElement | JSX.Element)
-}
-
-export const ToggleButton: React.FC<ToggleButtonProps> = ({
-  active: controlledActive,
+/**
+ * A component that turns its child element into a a11y toggle button
+ * to the W3C accessiblity standard.
+ */
+export function ToggleButton({
+  active,
   defaultActive = false,
   activeClass,
   inactiveClass,
   activeStyle,
   inactiveStyle,
-  onChange,
+  onChange = noop,
   children,
-}) => {
-  const [activeState, toggle] = useSwitch(defaultActive)
-  const active = controlledActive === void 0 ? activeState : controlledActive
-  const prevActive = React.useRef<boolean>(active)
-  const storedOnChange = React.useRef(onChange)
-  storedOnChange.current = onChange
-  const context = React.useMemo(
-    () => ({
-      toggle,
-      on: toggle.on,
-      off: toggle.off,
-      active,
-    }),
-    [active, toggle]
-  )
+}: ToggleButtonProps) {
+  const ref = React.useRef(null)
+  const props = children.props
+  const a11yProps = useA11yToggleButton(ref, {
+    onChange,
+    onClick: props.onClick,
+    active,
+    defaultActive,
+  })
+  const pressed = a11yProps['aria-pressed']
+  const buttonStyle = pressed ? activeStyle : inactiveStyle
 
-  React.useEffect(() => {
-    prevActive.current !== activeState && storedOnChange.current?.(activeState)
-    prevActive.current = activeState
-  }, [activeState])
-
-  // Fucking TypeScript is actually really dumb sometimes. See below for a
-  // prime example
-  const realChildren = (typeof children === 'function'
-    ? children(context)
-    : children) as React.ReactElement
-  const props = realChildren.props
-
-  return (
-    <ToggleButtonContext.Provider value={context}>
-      <Button>
-        {React.cloneElement(realChildren, {
-          className:
-            clsx(props.className, active ? activeClass : inactiveClass) ||
-            void 0,
-          style: Object.assign(
-            {},
-            props.style,
-            active ? activeStyle : inactiveStyle
-          ),
-          'aria-pressed': '' + active,
-          onClick: (event: React.MouseEvent<HTMLElement>) => {
-            toggle()
-            props.onClick?.(event)
-          },
-        })}
-      </Button>
-    </ToggleButtonContext.Provider>
-  )
+  return React.cloneElement(children, {
+    className:
+      clsx(props.className, pressed ? activeClass : inactiveClass) || void 0,
+    style: !props.style
+      ? buttonStyle
+      : Object.assign({}, props.style, buttonStyle),
+    'aria-pressed': a11yProps['aria-pressed'],
+    role: props.hasOwnProperty('role') ? props.role : a11yProps['role'],
+    tabIndex: props.hasOwnProperty('tabIndex')
+      ? props.tabIndex
+      : a11yProps['tabIndex'],
+    onClick: a11yProps['onClick'],
+    ref: useMergedRef(
+      ref,
+      // @ts-expect-error
+      children.ref
+    ),
+  })
 }
 
-export default ToggleButton
+function noop() {}
+
+export interface ToggleButtonProps {
+  /**
+   * Creates a controlled component where the active value always matches this one.
+   */
+  active?: boolean
+  /**
+   * Sets the default active state of the button.
+   * @default false
+   */
+  defaultActive?: boolean
+  /**
+   * Adds this class name to its child component when the button is in a active state.
+   */
+  activeClass?: string
+  /**
+   * Adds this class name to its child component when the button is in an inactive state.
+   */
+  inactiveClass?: string
+  /**
+   * Adds this style object to its child component when the button is in a active state.
+   */
+  activeStyle?: React.CSSProperties
+  /**
+   * Adds this style object to its child component when the button is in an inactive state.
+   */
+  inactiveStyle?: React.CSSProperties
+  /**
+   * This callback is invoked any time the active state changes.
+   */
+  onChange?: (on: boolean) => void
+  /**
+   * This is the element you want to turn into a ToggleButton.
+   */
+  children: React.ReactElement | JSX.Element
+}
+
+export interface UseA11yToggleButtonOptions<
+  E extends React.MouseEvent<any, MouseEvent>
+> {
+  /**
+   * Creates a controlled hook where the active value always matches this one.
+   */
+  active?: boolean
+  /**
+   * Sets the default active state of the button for uncontrolled hooks.
+   * @default false
+   */
+  defaultActive?: boolean
+  /**
+   * This callback is invoked any time the active state of the
+   * toggle button changes
+   */
+  onChange?: (active: boolean) => void
+  /**
+   * Adds a click event to your button
+   */
+  onClick?: (event: E) => any
+}
 
 /* istanbul ignore next */
 if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {

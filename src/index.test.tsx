@@ -1,133 +1,122 @@
 /* jest */
 import * as React from 'react'
-import {renderHook} from '@testing-library/react-hooks'
-import {render} from '@testing-library/react'
+import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {ToggleButton, useControls, useIsActive, useToggleButton} from './index'
+import {ToggleButton} from './index'
 
 describe('<ToggleButton>', () => {
-  it('should provide context to function child', () => {
-    let cxt
-
+  it('should toggle on/off on click', () => {
     render(
       <ToggleButton>
-        {(context) => {
-          cxt = context
-          return <div />
-        }}
+        <button />
       </ToggleButton>
     )
 
-    expect(cxt).toMatchSnapshot()
-  })
-
-  it('should toggle on/off on click', () => {
-    const result = render(
-      <ToggleButton>
-        {({active}) => <button data-testid="btn">{'' + active}</button>}
-      </ToggleButton>
-    )
-
-    expect(result.asFragment()).toMatchSnapshot('off initially')
-    userEvent.click(result.getByRole('button'))
-    expect(result.asFragment()).toMatchSnapshot('on')
-    userEvent.click(result.getByRole('button'))
-    expect(result.asFragment()).toMatchSnapshot('off')
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'false')
+    userEvent.click(screen.getByRole('button'))
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true')
+    userEvent.click(screen.getByRole('button'))
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('should be on by default when defaultActive', () => {
-    const result = render(
+    render(
       <ToggleButton defaultActive>
-        {({active}) => <button data-testid="btn">{'' + active}</button>}
+        <button />
       </ToggleButton>
     )
 
-    expect(result.asFragment()).toMatchSnapshot('on initially')
-    userEvent.click(result.getByRole('button'))
-    expect(result.asFragment()).toMatchSnapshot('off')
-    userEvent.click(result.getByRole('button'))
-    expect(result.asFragment()).toMatchSnapshot('on')
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true')
+    userEvent.click(screen.getByRole('button'))
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'false')
+    userEvent.click(screen.getByRole('button'))
   })
 
-  it('should not toggle on click when in a controlled state', () => {
+  it('should toggle in a controlled state', () => {
+    let active = false
+    const setActive = (value) => (active = value)
+
     const result = render(
-      <ToggleButton active>
-        {({active}) => <button data-testid="btn">{'' + active}</button>}
+      <ToggleButton active={active} onChange={setActive}>
+        <button />
       </ToggleButton>
     )
 
-    expect(result.asFragment()).toMatchSnapshot('on initially')
-    userEvent.click(result.getByRole('button'))
-    expect(result.asFragment()).toMatchSnapshot('on')
-  })
-
-  it('should fire onChange handler when active state changes', () => {
-    const cb = jest.fn()
-
-    const result = render(
-      <ToggleButton onChange={cb}>
-        {({active}) => <button data-testid="btn">{'' + active}</button>}
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'false')
+    userEvent.click(screen.getByRole('button'))
+    result.rerender(
+      <ToggleButton active={active} onChange={setActive}>
+        <button />
       </ToggleButton>
     )
-
-    expect(cb).not.toBeCalled()
-    userEvent.click(result.getByRole('button'))
-    // Jest is fucking broken as of this test so here's some fake temporary shit
-    cb(true)
-    expect(cb).toBeCalledWith(true)
-    userEvent.click(result.getByRole('button'))
-    // Jest is fucking broken as of this test so here's some fake temporary shit
-    cb(false)
-    expect(cb).toBeCalledWith(false)
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('should have activeClass and inactiveClass', () => {
-    const result = render(
-      <ToggleButton inactiveClass="off" activeClass="on">
-        <button data-testid="btn">toggle me</button>
+    render(
+      <ToggleButton inactiveClass='off' activeClass='on'>
+        <button />
       </ToggleButton>
     )
 
-    expect(result.asFragment()).toMatchSnapshot('off')
-    userEvent.click(result.getByRole('button'))
-    expect(result.asFragment()).toMatchSnapshot('on')
+    expect(screen.getByRole('button')).toHaveAttribute('class', 'off')
+    userEvent.click(screen.getByRole('button'))
+    expect(screen.getByRole('button')).toHaveAttribute('class', 'on')
   })
 
   it('should have activeStyle and inactiveStyle', () => {
-    const result = render(
+    render(
       <ToggleButton
         inactiveStyle={{color: 'red'}}
         activeStyle={{color: 'green'}}
       >
-        <button data-testid="btn">toggle me</button>
+        <button>toggle me</button>
       </ToggleButton>
     )
 
-    expect(result.asFragment()).toMatchSnapshot('off')
-    userEvent.click(result.getByRole('button'))
-    expect(result.asFragment()).toMatchSnapshot('on')
+    expect(screen.getByRole('button')).toHaveAttribute('style', 'color: red;')
+    userEvent.click(screen.getByRole('button'))
+    expect(screen.getByRole('button')).toHaveAttribute('style', 'color: green;')
   })
-})
 
-describe('useControls()', () => {
-  it('should have toggle, on, off keys', () => {
-    const {result} = renderHook(() => useControls(), {wrapper: ToggleButton})
-    expect(Object.keys(result.current)).toStrictEqual(['on', 'off', 'toggle'])
+  it('should assign activeStyle and inactiveStyle to prop styles', () => {
+    render(
+      <ToggleButton
+        inactiveStyle={{color: 'red'}}
+        activeStyle={{color: 'green'}}
+      >
+        <button style={{borderColor: 'green'}}>toggle me</button>
+      </ToggleButton>
+    )
+
+    expect(screen.getByRole('button')).toHaveAttribute(
+      'style',
+      'border-color: green; color: red;'
+    )
+    userEvent.click(screen.getByRole('button'))
+    expect(screen.getByRole('button')).toHaveAttribute(
+      'style',
+      'border-color: green; color: green;'
+    )
   })
-})
 
-describe('useIsActive()', () => {
-  it('should return boolean', () => {
-    const {result} = renderHook(() => useIsActive(), {wrapper: ToggleButton})
-    expect(typeof result.current).toBe('boolean')
+  it('should override role', () => {
+    render(
+      <ToggleButton>
+        <button role='link'>toggle me</button>
+      </ToggleButton>
+    )
+
+    expect(screen.getByRole('link')).toBeInTheDocument()
   })
-})
 
-describe('useToggleButton()', () => {
-  it('should return context', () => {
-    const {result} = renderHook(() => useToggleButton(), {
-      wrapper: ToggleButton,
-    })
-    expect(result.current).toMatchSnapshot()
+  it('should override tabIndex', () => {
+    render(
+      <ToggleButton>
+        <button tabIndex={-1}>toggle me</button>
+      </ToggleButton>
+    )
+
+    expect(screen.getByRole('button')).toHaveAttribute('tabindex', '-1')
   })
 })
