@@ -113,11 +113,11 @@ export interface UseA11yToggleButtonOptions<
 #### Returns
 
 ```ts
-{
-    readonly 'aria-pressed': boolean;
-    readonly onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    readonly role: "button";
-    readonly tabIndex: 0;
+interface ReturnValue {
+  readonly 'aria-pressed': boolean
+  readonly onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void
+  readonly role: 'button'
+  readonly tabIndex: 0
 }
 ```
 
