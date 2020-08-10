@@ -86,9 +86,7 @@ between actual `<button>` elements and fake ones e.g. `<a>` and `<div>` to the `
 #### UseA11yToggleButtonOptions
 
 ```ts
-export interface UseA11yToggleButtonOptions<
-  E extends React.MouseEvent<any, MouseEvent>
-> {
+export interface UseA11yToggleButtonOptions {
   /**
    * Creates a controlled hook where the active value always matches this one.
    */
@@ -106,7 +104,7 @@ export interface UseA11yToggleButtonOptions<
   /**
    * Adds a click event to your button
    */
-  onClick?: (event: E) => any
+  onClick?: (event: MouseEvent) => any
 }
 ```
 

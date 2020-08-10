@@ -59,6 +59,7 @@ export function ToggleButton({
   const buttonStyle = pressed ? activeStyle : inactiveStyle
 
   return React.cloneElement(children, {
+    onClick: undefined,
     className:
       clsx(props.className, pressed ? activeClass : inactiveClass) || void 0,
     style: !props.style
