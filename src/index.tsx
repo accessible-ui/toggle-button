@@ -11,17 +11,14 @@ import clsx from 'clsx'
  * @param target A React ref or HTML element
  * @param options Configuration options
  */
-export function useA11yToggleButton<
-  T extends HTMLElement,
-  E extends React.MouseEvent<T, MouseEvent>
->(
+export function useA11yToggleButton<T extends HTMLElement>(
   target: React.RefObject<T> | T | null,
   {
     active: controlledActive,
     defaultActive = false,
     onClick = noop,
     onChange = noop,
-  }: UseA11yToggleButtonOptions<E> = {}
+  }: UseA11yToggleButtonOptions = {}
 ) {
   const [active, toggle] = useSwitch(defaultActive, controlledActive, onChange)
 
@@ -29,7 +26,7 @@ export function useA11yToggleButton<
     {
       'aria-pressed': active,
     } as const,
-    useA11yButton<T, E>(target, (event) => {
+    useA11yButton<T>(target, (event) => {
       toggle()
       onClick(event)
     })
@@ -72,7 +69,6 @@ export function ToggleButton({
     tabIndex: props.hasOwnProperty('tabIndex')
       ? props.tabIndex
       : a11yProps['tabIndex'],
-    onClick: a11yProps['onClick'],
     ref: useMergedRef(
       ref,
       // @ts-expect-error
@@ -119,9 +115,7 @@ export interface ToggleButtonProps {
   children: React.ReactElement | JSX.Element
 }
 
-export interface UseA11yToggleButtonOptions<
-  E extends React.MouseEvent<any, MouseEvent>
-> {
+export interface UseA11yToggleButtonOptions {
   /**
    * Creates a controlled hook where the active value always matches this one.
    */
@@ -139,7 +133,7 @@ export interface UseA11yToggleButtonOptions<
   /**
    * Adds a click event to your button
    */
-  onClick?: (event: E) => any
+  onClick?: (event: MouseEvent) => any
 }
 
 /* istanbul ignore next */
